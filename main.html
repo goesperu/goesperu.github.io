@@ -131,6 +131,47 @@
             border: 0;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
+
+        #sidebar.collapsed {
+            margin-left: -250px;
+        }
+
+        #content.expanded {
+            margin-left: 0;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 60px;
+            background: #2c3e50;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            color: white;
+            padding: 0;
+            cursor: pointer;
+            z-index: 1000;
+            transition: left 0.3s;
+        }
+
+        .sidebar-toggle.collapsed {
+            left: 0;
+        }
+
+        .sidebar-toggle:hover {
+            background: #34495e;
+        }
+
+        .sidebar-toggle i {
+            transition: transform 0.3s;
+        }
+
+        .sidebar-toggle.collapsed i {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body>
@@ -177,6 +218,9 @@
 
         <!-- Page Content -->
         <div id="content">
+            <button class="sidebar-toggle">
+                <i class="fas fa-chevron-left"></i>
+            </button>
             <iframe id="mainFrame" name="mainFrame" src="input.html" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
     </div>
@@ -238,6 +282,32 @@
                 window.location.href = 'index.html';
             });
         });
+
+        // Agregar manejo del toggle del sidebar
+        const toggleBtn = document.querySelector('.sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+
+        // Restaurar estado del sidebar
+        const sidebarState = localStorage.getItem('sidebarState');
+        if (sidebarState === 'collapsed') {
+            sidebar.classList.add('collapsed');
+            content.classList.add('expanded');
+            toggleBtn.classList.add('collapsed');
+        } else if (!sidebarState) {
+            // Si no hay estado guardado, establecer como expandido
+            localStorage.setItem('sidebarState', 'expanded');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+            toggleBtn.classList.toggle('collapsed');
+            
+            // Guardar estado
+            localStorage.setItem('sidebarState', 
+                sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded'
+            );
+        });
     </script>
 </body>
-</html>
