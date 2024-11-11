@@ -366,11 +366,15 @@
         document.getElementById('gastoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             
             try {
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetch(`${SCRIPT_URL}?action=saveRegistro`, {
                     method: 'POST',
                     body: JSON.stringify(data)
                 });
@@ -378,7 +382,7 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    mostrarEstado(result.message, true);
+                    mostrarEstado('Registro guardado exitosamente', true);
                     limpiarFormulario();
                 } else {
                     throw new Error(result.message || 'Error al guardar el registro');
@@ -386,6 +390,9 @@
             } catch (error) {
                 console.error('Error:', error);
                 mostrarEstado('Error al guardar el registro: ' + error.message, false);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Registro';
             }
         });
 
