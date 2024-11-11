@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros de Gastos</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables CSS -->
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+     <!-- DataTables JS -->
+     <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+     <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+     <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+     <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+     <!-- Bootstrap JS -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Anaheim&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6B35;
+            --primary-hover: #ff855b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .header h2 {
+            color: var(--primary-color);
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border: 1px solid var(--primary-color) !important;
+        }
+
+        #registrosTable_filter input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .actions-column {
+            white-space: nowrap;
+            width: 100px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        #exportExcel {
+            white-space: nowrap;
+        }
+
+        .dt-buttons {
+            margin-bottom: 15px;
+        }
+
+        .dt-button {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+            border-radius: 4px !important;
+            padding: 6px 12px !important;
+            font-size: 14px !important;
+        }
+
+        .dt-button:hover {
+            background-color: #218838 !important;
+            border-color: #1e7e34 !important;
+        }
+
+        .dt-button i {
+            margin-right: 5px;
+        }
+
+        .summary-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .summary-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-total {
+            font-weight: bold;
+            border-top: 2px solid #dee2e6;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .text-success {
+            color: #28a745 !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+
+        .amount {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        .summary-section + .summary-section {
+            margin-top: 30px;
+        }
+
+        .summary-card {
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h4 i {
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        #applyFilter, #resetFilter {
+            width: 100%;
+            padding: 8px 16px;
+        }
+
+        #resetFilter {
+            border: 1px solid #ddd;
+        }
+
+        #resetFilter:hover {
+            background-color: #f8f9fa;
+        }
+
+        .filterWrapper, .bankFilter, .costCenterFilter {
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-select-sm {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.2rem;
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+
+        .form-select-sm:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+            outline: none;
+        }
+
+        /* Estilo para alinear todos los filtros */
+        .dataTables_filter, .bankFilter, .costCenterFilter {
+            margin-top: 0.5rem;
+        }
+
+        /* Ajustar el espacio entre los filtros */
+        .row:has(.filterWrapper, .bankFilter, .costCenterFilter) {
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .filterWrapper, .bankFilter, .costCenterFilter {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Contenedor principal de filtros */
+        .filter-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        /* Estilo para cada filtro individual */
+        .custom-filter {
+            position: relative;
+            min-width: 200px;
+        }
+
+        /* Wrapper para el select con icono */
+        .filter-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Icono del filtro */
+        .filter-icon {
+            position: absolute;
+            left: 10px;
+            color: #666;
+            font-size: 0.9rem;
+            z-index: 1;
+        }
+
+        /* Select personalizado */
+        .filter-select {
+            appearance: none;
+            padding: 6px 12px 6px 35px;
+            font-size: 0.85rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f8f9fa;
+            color: #495057;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:hover {
+            background: #fff;
+            border-color: #adb5bd;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.1);
+            background: #fff;
+        }
+
+        /* Personalización del filtro de búsqueda */
+        .dataTables_filter {
+            margin: 0;
+        }
+
+        .dataTables_filter label {
+            position: relative;
+            margin: 0;
+        }
+
+        .dataTables_filter input {
+            padding: 6px 12px 6px 35px;
+            font-size: 0.85rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f8f9fa;
+            width: 200px;
+            transition: all 0.2s ease;
+        }
+
+        .dataTables_filter input:hover {
+            background: #fff;
+            border-color: #adb5bd;
+        }
+
+        .dataTables_filter input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.1);
+            background: #fff;
+            width: 250px;
+        }
+
+        .dataTables_filter i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .custom-filter {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .dataTables_filter input {
+                width: 100%;
+            }
+            
+            .dataTables_filter input:focus {
+                width: 100%;
+            }
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .summary-section {
+            margin-bottom: 20px !important;
+        }
+
+        .summary-totals-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .total-box {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: transform 0.2s;
+        }
+
+        .total-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .total-box h5 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .total-box .amount {
+            font-size: 1.25rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Ajustar el tamaño de la tabla para que quepa bien en el iframe */
+        .table-responsive {
+            overflow-x: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        /* Estilos para la tabla */
+        #registrosTable {
+            font-family: 'Anaheim', sans-serif;
+            font-size: 0.9rem; /* Tamaño más pequeño */
+        }
+
+        #registrosTable thead th {
+            font-family: 'Anaheim', sans-serif;
+            font-size: 0.95rem; /* Ligeramente más grande que el contenido */
+            font-weight: 600; /* Un poco más bold para los encabezados */
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_processing,
+        .dataTables_wrapper .dataTables_paginate {
+            font-family: 'Anaheim', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        /* Ajustar el padding de las celdas para una tabla más compacta */
+        #registrosTable td,
+        #registrosTable th {
+            padding: 8px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-table"></i> Registro de Gastos - GOES</h2>
+        </div>
+        
+        <div class="mb-4 d-flex gap-2">
+            <button id="exportExcel" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Exportar a Excel
+            </button>
+            <button id="exportBankSummaryPDF" class="btn btn-danger">
+                <i class="fas fa-file-pdf"></i> Exportar Resumen Bancos
+            </button>
+        </div>
+
+        <div class="filter-section mb-4">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label for="monthFilter" class="form-label">Filtrar por Mes</label>
+                    <select id="monthFilter" class="form-select">
+                        <option value="">Todos los meses</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="yearFilter" class="form-label">Año</label>
+                    <select id="yearFilter" class="form-select">
+                        <option value="">Todos los años</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button id="applyFilter" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Aplicar Filtro
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <button id="resetFilter" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo"></i> Resetear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-section mb-4">
+            <h3 class="text-muted mb-3">Resumen por Banco</h3>
+            <div class="row" id="bankSummary">
+                <!-- Los resúmenes se cargarán dinmicamente aquí -->
+            </div>
+        </div>
+
+        <div class="summary-section mb-4">
+            <h3 class="text-muted mb-3">Resumen por Centro de Costo</h3>
+            <div class="row" id="costCenterSummary">
+                <!-- Los resúmenes se cargarán dinámicamente aquí -->
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="registrosTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Centro de Costo</th>
+                        <th>Categoría</th>
+                        <th>Subtipo</th>
+                        <th>Importe</th>
+                        <th>Detalle</th>
+                        <th>Beneficiario</th>
+                        <th>Banco</th>
+                        <th>Moneda</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Los datos se cargan dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scripts necesarios -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        // Verificación de acceso
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+            
+            // Verificar si el usuario tiene acceso
+            if (!userInfo || !['administrador', 'finanzas'].includes(userInfo.rol?.toLowerCase())) {
+                // En lugar de redireccionar, mostrar un mensaje
+                document.body.innerHTML = `
+                    <div class="container mt-5">
+                        <div class="alert alert-danger" role="alert">
+                            No tienes permisos para acceder a esta página.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+        });
+
+        // Verificar si hay una sesión activa y el rol es correcto
+        const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+        if (!userInfo || userInfo.rol.toLowerCase() !== 'administrador') {
+            window.top.location.href = 'input.html';
+        }
+
+        // Reemplaza con tu URL de implementación de Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5vofS0Q7mHtEyG0CAg1WUJtHi0Cow01cfoZWiufRn4s7t-NxUAc56FH8wr6Y1w4Vtg/exec';
+
+        async function cargarRegistros() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getRegistros`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    initializeDataTable(data.registros);
+                    calcularResumenPorBanco(data.registros);
+                    calcularResumenPorCentroCosto(data.registros);
+                } else {
+                    throw new Error(data.message || 'Error al cargar los registros');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar los registros: ' + error.message);
+            }
+        }
+
+        let dataTable; // Variable global para la tabla
+
+        function initializeDataTable(data) {
+            dataTable = $('#registrosTable').DataTable({
+                data: data,
+                columns: [
+                    { data: 'fecha' },
+                    { data: 'tipo' },
+                    { data: 'centroCosto' },
+                    { data: 'categoria' },
+                    { data: 'subtipo' },
+                    { data: 'importe' },
+                    { data: 'detalle' },
+                    { data: 'beneficiario' },
+                    { data: 'banco' },
+                    { data: 'moneda' },
+                    { // Columna de acciones
+                        data: null,
+                        render: function(data, type, row, meta) {
+                            const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+                            return userInfo.rol?.toLowerCase() === 'administrador' 
+                                ? `<button class="btn btn-sm btn-primary edit-record" data-row="${meta.row}">
+                                     <i class="fas fa-edit"></i> Editar
+                                   </button>`
+                                : '';
+                        },
+                        orderable: false
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json',
+                    searchPlaceholder: "Buscar en todos los campos...",
+                    search: "<i class='fas fa-search'></i>"
+                },
+                order: [[0, 'desc']],
+                pageLength: 10,
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy', 'pdf', 'print'
+                ],
+                initComplete: function() {
+                    // Crear contenedor para filtros personalizados si no existe
+                    var filterContainer = $('.custom-filters');
+                    if (filterContainer.length === 0) {
+                        filterContainer = $('<div class="custom-filters mb-3"></div>').insertBefore('#registrosTable');
+                    }
+
+                    // Filtro de Banco (columna 8)
+                    var bankFilter = $('<div class="custom-filter bank-filter"></div>').appendTo(filterContainer);
+                    this.api().columns(8).every(function() {
+                        var column = this;
+                        var select = $(`
+                            <div class="filter-wrapper">
+                                <i class="fas fa-university filter-icon"></i>
+                                <select class="filter-select">
+                                    <option value="">Banco: Todos</option>
+                                </select>
+                            </div>
+                        `).appendTo(bankFilter).find('select');
+
+                        column.data().unique().sort().each(function(d) {
+                            if (d) {
+                                select.append('<option value="' + d + '">' + d + '</option>');
+                            }
+                        });
+
+                        select.on('change', function() {
+                            var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                            column.search(val ? '^' + val + '$' : '', true, false).draw();
+                        });
+                    });
+
+
+
+                    // Crear filtro de centro de costo
+                    var costFilter = $('<div class="custom-filter cost-filter"></div>').appendTo(filterContainer);
+                    this.api().columns(2).every(function() {
+                        var column = this;
+                        var select = $(`
+                            <div class="filter-wrapper">
+                                <i class="fas fa-building filter-icon"></i>
+                                <select class="filter-select">
+                                    <option value="">Centro: Todos</option>
+                                </select>
+                            </div>
+                        `).appendTo(costFilter)
+                            .find('select')
+                            .on('change', function() {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+
+                        column.data().unique().sort().each(function(d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        });
+                    });
+
+                    // Inicializar los filtros de fecha después de cargar los datos
+                    initializeFilters();
+
+                    // Agregar event listeners para los filtros de fecha
+                    document.getElementById('applyFilter').addEventListener('click', applyDateFilter);
+                    document.getElementById('resetFilter').addEventListener('click', resetFilters);
+
+                    // Evento para actualizar resúmenes
+                    this.api().on('search.dt', function() {
+                        const filteredData = dataTable.rows({ search: 'applied' }).data().toArray();
+                        calcularResumenPorBanco(filteredData);
+                        calcularResumenPorCentroCosto(filteredData);
+                    });
+                },
+                "drawCallback": function(settings) {
+                    // Obtener los datos filtrados actuales
+                    const filteredData = dataTable.rows({search:'applied'}).data().toArray();
+                    actualizarTotalesFiltrados(filteredData);
+                }
+            });
+
+            // Manejador del botón de edición
+            $('#registrosTable').on('click', '.edit-record', function() {
+                if (userInfo.rol.toLowerCase() !== 'administrador') {
+                    alert('No tienes permisos para editar registros');
+                    return;
+                }
+
+                const rowIndex = $(this).data('row');
+                // Cambiar solo el contenido del iframe derecho
+                window.location.href = `edit.html?row=${rowIndex}`;
+            });
+        }
+
+        // Agregar después de initializeDataTable
+        $('#registrosTable').on('click', '.edit-btn', async function() {
+            console.log('Botón de edición clickeado');
+            const data = dataTable.row($(this).closest('tr')).data();
+            const rowIndex = dataTable.row($(this).closest('tr')).index();
+            
+            console.log('Datos a editar:', data);
+            
+            try {
+                // Cargar datos para los selectores
+                const response = await fetch(`${SCRIPT_URL}?action=getData`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Llenar los selectores
+                    llenarSelector('editCentroCosto', result.data.centrosCosto);
+                    llenarSelector('editCategoria', result.data.categorias);
+                    
+                    // Llenar el formulario con los datos actuales
+                    $('#editRowIndex').val(rowIndex);
+                    $('#editFecha').val(data.fecha);
+                    $('#editTipo').val(data.tipo);
+                    $('#editCentroCosto').val(data.centroCosto);
+                    $('#editCategoria').val(data.categoria);
+                    $('#editSubtipo').val(data.subtipo);
+                    $('#editImporte').val(data.importe);
+                    $('#editMoneda').val(data.moneda);
+                    $('#editBeneficiario').val(data.beneficiario);
+                    $('#editDetalle').val(data.detalle);
+                    
+                    // Mostrar el modal
+                    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                    editModal.show();
+                }
+            } catch (error) {
+                console.error('Error al cargar datos para edición:', error);
+                alert('Error al cargar datos para edición: ' + error.message);
+            }
+        });
+
+        // Función auxiliar para llenar selectores
+        function llenarSelector(id, opciones) {
+            const select = document.getElementById(id);
+            select.innerHTML = '<option value="">Seleccione...</option>';
+            opciones.forEach(opcion => {
+                const option = document.createElement('option');
+                option.value = opcion;
+                option.textContent = opcion;
+                select.appendChild(option);
+            });
+        }
+
+        // Agregar después de la función llenarSelector
+
+        // Función para manejar la relación categoría-subtipo
+        async function cargarCategoriasYSubtipos() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getData`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    window.categoriaSubtipoMap = result.data.categoriaSubtipoMap;
+                    return result.data;
+                }
+                throw new Error(result.message || 'Error al cargar datos');
+            } catch (error) {
+                console.error('Error:', error);
+                throw error;
+            }
+        }
+
+        // Función para actualizar las opciones de subtipo basado en la categoría seleccionada
+        function actualizarSubtipos(categoria) {
+            const subtipoSelect = document.getElementById('editSubtipo');
+            subtipoSelect.innerHTML = '<option value="">Seleccione un subtipo...</option>';
+            
+            if (categoria && window.categoriaSubtipoMap && window.categoriaSubtipoMap[categoria]) {
+                window.categoriaSubtipoMap[categoria].forEach(subtipo => {
+                    const option = document.createElement('option');
+                    option.value = subtipo;
+                    option.textContent = subtipo;
+                    subtipoSelect.appendChild(option);
+                });
+                subtipoSelect.disabled = false;
+            } else {
+                subtipoSelect.disabled = true;
+            }
+        }
+
+        // Modificar el manejador del botón de edición para incluir la carga de subtipos
+        $('#registrosTable').on('click', '.edit-btn', async function() {
+            console.log('Botón de edición clickeado');
+            const data = dataTable.row($(this).closest('tr')).data();
+            const rowIndex = dataTable.row($(this).closest('tr')).index();
+            
+            console.log('Datos a editar:', data);
+            
+            try {
+                // Cargar datos incluyendo el mapa de categoría-subtipo
+                const datosIniciales = await cargarCategoriasYSubtipos();
+                
+                // Llenar los selectores
+                llenarSelector('editCentroCosto', datosIniciales.centrosCosto);
+                llenarSelector('editCategoria', datosIniciales.categorias);
+                
+                // Llenar el formulario con los datos actuales
+                $('#editRowIndex').val(rowIndex);
+                $('#editFecha').val(data.fecha);
+                $('#editTipo').val(data.tipo);
+                $('#editCentroCosto').val(data.centroCosto);
+                $('#editCategoria').val(data.categoria);
+                $('#editImporte').val(data.importe);
+                $('#editMoneda').val(data.moneda);
+                $('#editBeneficiario').val(data.beneficiario);
+                $('#editDetalle').val(data.detalle);
+                
+                // Actualizar y seleccionar el subtipo
+                actualizarSubtipos(data.categoria);
+                $('#editSubtipo').val(data.subtipo);
+                
+                // Mostrar el modal
+                const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show();
+            } catch (error) {
+                console.error('Error al cargar datos para edición:', error);
+                alert('Error al cargar datos para edición: ' + error.message);
+            }
+        });
+
+        // Agregar el evento change para la categoría
+        $('#editCategoria').on('change', function() {
+            const categoriaSeleccionada = $(this).val();
+            actualizarSubtipos(categoriaSeleccionada);
+        });
+
+        // Manejar el guardado de cambios
+        // Reemplaza el manejador actual del botón saveEdit
+        $('#saveEdit').click(async function() {
+            console.log('Intentando guardar cambios...');
+            
+            if (!$('#editForm')[0].checkValidity()) {
+                $('#editForm')[0].reportValidity();
+                return;
+            }
+
+            const rowIndex = $('#editRowIndex').val();
+            const updatedData = {
+                fecha: $('#editFecha').val(),
+                tipo: $('#editTipo').val(),
+                centroCosto: $('#editCentroCosto').val(),
+                categoria: $('#editCategoria').val(),
+                subtipo: $('#editSubtipo').val(),
+                importe: $('#editImporte').val(),
+                moneda: $('#editMoneda').val(),
+                beneficiario: $('#editBeneficiario').val(),
+                detalle: $('#editDetalle').val(),
+                rowIndex: parseInt(rowIndex) + 2
+            };
+
+            console.log('Datos a actualizar:', updatedData);
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=updateRegistro`, {
+                    method: 'POST',
+                    body: JSON.stringify(updatedData)
+                });
+
+                const result = await response.json();
+                console.log('Respuesta del servidor:', result);
+                
+                if (result.status === 'success') {
+                    // Actualizar la tabla
+                    dataTable.row(rowIndex).data(updatedData).draw();
+                    
+                    // Actualizar los resúmenes
+                    const allData = dataTable.data().toArray();
+                    calcularResumenPorBanco(allData);
+                    calcularResumenPorCentroCosto(allData);
+                    
+                    // Cerrar el modal correctamente
+                    $('#editModal').modal('hide');
+                    reiniciarModal();
+                    
+                    alert('Registro actualizado correctamente');
+                } else {
+                    throw new Error(result.message || 'Error al actualizar el registro');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al actualizar el registro: ' + error.message);
+            }
+        });
+        // Cargar los registros cuando la página esté lista
+        $(document).ready(cargarRegistros);
+
+        // Función para exportar datos filtrados
+        async function exportarExcel() {
+            try {
+                // Obtener solo los datos visibles/filtrados
+                const filteredData = dataTable.rows({ search: 'applied' }).data().toArray();
+                
+                // Si no hay datos, mostrar mensaje
+                if (filteredData.length === 0) {
+                    alert('No hay datos para exportar');
+                    return;
+                }
+
+                // Crear libro de trabajo
+                const wb = XLSX.utils.book_new();
+                
+                // Preparar encabezados
+                const headers = [
+                    "Fecha",
+                    "Tipo",
+                    "Centro de Costo",
+                    "Categoría",
+                    "Importe",
+                    "Moneda",
+                    "Beneficiario",
+                    "Detalle"
+                ];
+
+                // Preparar datos para el Excel
+                const excelData = [
+                    headers,
+                    ...filteredData.map(row => [
+                        new Date(row.fecha).toLocaleDateString(),
+                        row.tipo,
+                        row.centroCosto,
+                        row.categoria,
+                        row.importe,
+                        row.moneda,
+                        row.beneficiario,
+                        row.detalle
+                    ])
+                ];
+                
+                // Crear hoja de cálculo
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
+                
+                // Ajustar anchos de columna
+                const wscols = [
+                    {wch: 15}, // Fecha
+                    {wch: 15}, // Tipo
+                    {wch: 15}, // Centro de Costo
+                    {wch: 15}, // Categoría
+                    {wch: 12}, // Importe
+                    {wch: 10}, // Moneda
+                    {wch: 20}, // Beneficiario
+                    {wch: 30}  // Detalle
+                ];
+                ws['!cols'] = wscols;
+                
+                // Agregar la hoja al libro
+                XLSX.utils.book_append_sheet(wb, ws, "Registros_Filtrados");
+                
+                // Generar el archivo y descargarlo
+                const fechaActual = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `Registros_Filtrados_${fechaActual}.xlsx`);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al exportar a Excel: ' + error.message);
+            }
+        }
+
+        // Agregar el evento click al botón de exportar
+        document.getElementById('exportExcel').addEventListener('click', exportarExcel);
+
+        // Función para calcular resumen por banco
+        function calcularResumenPorBanco(data) {
+            const resumenBancos = {};
+
+            // Procesar cada registro
+            data.forEach(registro => {
+                const banco = registro.banco;
+                const importe = parseFloat(registro.importe);
+                const tipo = registro.tipo.toLowerCase();
+                
+                // Inicializar el objeto del banco si no existe
+                if (!resumenBancos[banco]) {
+                    resumenBancos[banco] = {
+                        saldoInicial: 0,
+                        ingresos: 0,
+                        egresos: 0,
+                        monedas: new Set()
+                    };
+                }
+
+                // Sumar al total correspondiente
+                if (tipo === 'saldo inicial') {
+                    resumenBancos[banco].saldoInicial += importe;
+                    resumenBancos[banco].monedas.add(registro.moneda);
+                } else if (tipo.includes('ingreso')) {
+                    resumenBancos[banco].ingresos += importe;
+                    resumenBancos[banco].monedas.add(registro.moneda);
+                } else {
+                    resumenBancos[banco].egresos += importe;
+                    resumenBancos[banco].monedas.add(registro.moneda);
+                }
+            });
+
+            // Generar HTML para el resumen
+            const summaryContainer = document.getElementById('bankSummary');
+            summaryContainer.innerHTML = '';
+
+            Object.entries(resumenBancos).forEach(([banco, datos]) => {
+                const saldoFinal = datos.saldoInicial + datos.ingresos - datos.egresos;
+                const monedas = Array.from(datos.monedas).join(', ');
+                
+                const cardHtml = `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="summary-card">
+                            <h4><i class="fas fa-university"></i> ${banco}</h4>
+                            <div class="summary-details">
+                                <span>Saldo Inicial:</span>
+                                <span class="amount text-info">
+                                    ${formatearMonto(datos.saldoInicial)} ${monedas}
+                                </span>
+                            </div>
+                            <div class="summary-details">
+                                <span>Ingresos:</span>
+                                <span class="amount text-success">
+                                    ${formatearMonto(datos.ingresos)} ${monedas}
+                                </span>
+                            </div>
+                            <div class="summary-details">
+                                <span>Egresos:</span>
+                                <span class="amount text-danger">
+                                    ${formatearMonto(datos.egresos)} ${monedas}
+                                </span>
+                            </div>
+                            <div class="summary-details summary-total">
+                                <span>Saldo Final:</span>
+                                <span class="amount ${saldoFinal >= 0 ? 'text-success' : 'text-danger'}">
+                                    ${formatearMonto(saldoFinal)} ${monedas}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                summaryContainer.innerHTML += cardHtml;
+            });
+        }
+
+        function formatearMonto(monto) {
+            return new Intl.NumberFormat('es-PE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(monto);
+        }
+
+        // Función para calcular resumen por centro de costo
+        function calcularResumenPorCentroCosto(data) {
+            const TASA_CAMBIO = 3.7;
+            const resumenCentros = {};
+            const centrosCostoUnicos = new Set();
+            let totalIngresosFact = 0;
+
+            // Función auxiliar para verificar si es dólares
+            const esDolares = (moneda) => {
+                return moneda && (
+                    moneda.toUpperCase() === 'USD' || 
+                    moneda.toUpperCase() === 'DOLARES' ||
+                    moneda.toUpperCase() === 'DÓLARES'
+                );
+            };
+
+            // Primer paso: Calcular ingresos por facturación para cada centro
+            data.forEach(registro => {
+                // Ignorar movimientos entre cuentas
+                if (registro.categoria && registro.categoria.toLowerCase() === 'movimiento entre cuentas') return;
+
+                if (registro.centroCosto.toLowerCase() !== 'todos' && 
+                    registro.tipo.toLowerCase() === 'ingreso' && 
+                    registro.categoria === 'Facturacion') {
+                    
+                    if (!resumenCentros[registro.centroCosto]) {
+                        resumenCentros[registro.centroCosto] = {
+                            ingresos: 0,
+                            egresos: 0,
+                            monedas: new Set(['PEN'])
+                        };
+                    }
+                    
+                    let importe = parseFloat(registro.importe) || 0;
+                    if (esDolares(registro.moneda)) {
+                        importe *= TASA_CAMBIO;
+                        console.log(`Convirtiendo ingreso USD: ${registro.importe} USD = ${importe} PEN para ${registro.centroCosto}`);
+                    }
+                    
+                    resumenCentros[registro.centroCosto].ingresos += importe;
+                    totalIngresosFact += importe;
+                    centrosCostoUnicos.add(registro.centroCosto);
+                }
+            });
+
+            // Segundo paso: Procesar egresos
+            let egresosComunes = 0;
+            
+            data.forEach(registro => {
+                // Ignorar saldos iniciales y movimientos entre cuentas
+                if (registro.tipo.toLowerCase() === 'saldo inicial' || 
+                    (registro.categoria && registro.categoria.toLowerCase() === 'movimiento entre cuentas')) return;
+
+                let importe = parseFloat(registro.importe) || 0;
+                if (esDolares(registro.moneda)) {
+                    importe *= TASA_CAMBIO;
+                    console.log(`Convirtiendo egreso USD: ${registro.importe} USD = ${importe} PEN para ${registro.centroCosto}`);
+                }
+
+                if (registro.tipo.toLowerCase() !== 'ingreso') {
+                    if (registro.centroCosto.toLowerCase() === 'todos') {
+                        egresosComunes += importe;
+                    } else {
+                        if (resumenCentros[registro.centroCosto]) {
+                            resumenCentros[registro.centroCosto].egresos += importe;
+                        }
+                    }
+                }
+            });
+
+            console.log('Total ingresos facturación (PEN):', totalIngresosFact);
+
+            // Tercer paso: Distribuir egresos comunes proporcionalmente
+            if (egresosComunes > 0 && totalIngresosFact > 0) {
+                Object.keys(resumenCentros).forEach(centro => {
+                    const proporcion = resumenCentros[centro].ingresos / totalIngresosFact;
+                    const egresosProporcionales = egresosComunes * proporcion;
+                    resumenCentros[centro].egresos += egresosProporcionales;
+                    console.log(`Centro ${centro}: Proporción ${(proporcion * 100).toFixed(2)}%, Egresos proporcionales: ${egresosProporcionales.toFixed(2)} PEN`);
+                });
+            }
+
+            // Generar HTML para el resumen
+            const summaryContainer = document.getElementById('costCenterSummary');
+            summaryContainer.innerHTML = '';
+
+            Object.entries(resumenCentros).forEach(([centro, datos]) => {
+                const saldo = datos.ingresos - datos.egresos;
+                const proporcionIngresos = ((datos.ingresos / totalIngresosFact) * 100).toFixed(2);
+                
+                const cardHtml = `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="summary-card">
+                            <h4><i class="fas fa-building"></i> ${centro}</h4>
+                            <div class="summary-details">
+                                <span>Ingresos (Facturación):</span>
+                                <span class="amount text-success">
+                                    ${formatearMonto(datos.ingresos)} PEN
+                                </span>
+                            </div>
+                            <div class="summary-details">
+                                <span>% del Total:</span>
+                                <span class="amount text-info">
+                                    ${proporcionIngresos}%
+                                </span>
+                            </div>
+                            <div class="summary-details">
+                                <span>Egresos:</span>
+                                <span class="amount text-danger">
+                                    ${formatearMonto(datos.egresos)} PEN
+                                </span>
+                            </div>
+                            <div class="summary-details summary-total">
+                                <span>Saldo:</span>
+                                <span class="amount ${saldo >= 0 ? 'text-success' : 'text-danger'}">
+                                    ${formatearMonto(saldo)} PEN
+                                </span>
+                            </div>
+                            <div class="summary-note">
+                                <small class="text-muted">* Montos en USD convertidos a PEN (1 USD = 3.7 PEN)</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                summaryContainer.innerHTML += cardHtml;
+            });
+        }
+
+        // Función para inicializar los filtros
+        function initializeFilters() {
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            
+            // Limpiar opciones existentes
+            monthFilter.innerHTML = '<option value="">Todos los meses</option>';
+            yearFilter.innerHTML = '<option value="">Todos los años</option>';
+            
+            // Nombres de los meses en español
+            const meses = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            
+            // Obtener fechas únicas de los datos
+            const years = new Set();
+            const months = new Set();
+            
+            dataTable.data().each(function(registro) {
+                const fecha = new Date(registro.fecha);
+                years.add(fecha.getFullYear());
+                months.add(fecha.getMonth());
+            });
+            
+            // Llenar el selector de meses
+            Array.from(months).sort().forEach(monthIndex => {
+                const option = document.createElement('option');
+                option.value = monthIndex + 1;
+                option.textContent = meses[monthIndex];
+                monthFilter.appendChild(option);
+            });
+            
+            // Llenar el selector de años
+            Array.from(years).sort().forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+        }
+
+        // Función para aplicar el filtro
+        function applyDateFilter() {
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            const selectedMonth = monthFilter.value;
+            const selectedYear = yearFilter.value;
+            
+            // Limpiar filtros anteriores
+            $.fn.dataTable.ext.search.pop();
+            
+            // Agregar nuevo filtro
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                const fecha = new Date(dataTable.row(dataIndex).data().fecha);
+                
+                if (!selectedMonth && !selectedYear) return true;
+                
+                const monthMatch = !selectedMonth || (fecha.getMonth() + 1) == selectedMonth;
+                const yearMatch = !selectedYear || fecha.getFullYear() == selectedYear;
+                
+                return monthMatch && yearMatch;
+            });
+            
+            // Redibujar la tabla y actualizar resúmenes
+            dataTable.draw();
+        }
+
+        // Función para resetear los filtros
+        function resetFilters() {
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('yearFilter').value = '';
+            
+            // Limpiar los filtros personalizados
+            $.fn.dataTable.ext.search.pop();
+            
+            // Redibujar la tabla
+            dataTable.draw();
+        }
+
+        // Función para exportar el resumen de bancos a PDF
+        function exportBankSummaryPDF() {
+            // Obtener el elemento que contiene el resumen
+            const summarySection = document.querySelector('.summary-section');
+            
+            // Crear un contenedor principal para todo el contenido
+            const mainContainer = document.createElement('div');
+            mainContainer.style.position = 'relative';
+            mainContainer.style.paddingBottom = '20px'; // Reducido el espacio para el footer
+            
+            // Configuración para el PDF
+            const opt = {
+                margin: [0.3, 1, 0.5, 1], // Reducido margen superior a 0.3cm y inferior a 0.5cm
+                filename: 'Resumen_Bancos.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'cm', 
+                    format: 'a4', 
+                    orientation: 'landscape'
+                },
+                pagebreak: { mode: 'avoid-all' }
+            };
+
+            // Crear una copia del elemento para modificarlo sin afectar la vista original
+            const elementToConvert = summarySection.cloneNode(true);
+            
+            // Agregar estilos específicos para el PDF
+            elementToConvert.style.padding = '8px'; // Reducido a 8px
+            elementToConvert.style.backgroundColor = 'white';
+            elementToConvert.style.width = '100%';
+
+            // Ajustar el layout para formato horizontal
+            const summaryCards = elementToConvert.querySelectorAll('.col-md-4');
+            summaryCards.forEach(card => {
+                card.style.width = '31%';
+                card.style.display = 'inline-block';
+                card.style.margin = '3px'; // Reducido a 3px
+                
+                // Ajustar el tamaño de la tarjeta
+                const summaryCard = card.querySelector('.summary-card');
+                if (summaryCard) {
+                    summaryCard.style.padding = '8px'; // Reducido a 8px
+                    summaryCard.style.marginBottom = '3px';
+                }
+            });
+
+            // Agregar fecha y hora de la exportación con menos espacio
+            const dateDiv = document.createElement('div');
+            dateDiv.style.textAlign = 'right';
+            dateDiv.style.marginBottom = '3px'; // Reducido a 3px
+            dateDiv.style.fontSize = '9px'; // Reducido a 9px
+            dateDiv.style.color = '#666';
+            dateDiv.innerHTML = `Exportado el: ${new Date().toLocaleString()}`;
+
+            // Agregar título más compacto
+            const titleDiv = document.createElement('div');
+            titleDiv.style.textAlign = 'center';
+            titleDiv.style.marginBottom = '5px'; // Reducido a 5px
+            titleDiv.style.fontSize = '14px'; // Reducido a 14px
+            titleDiv.style.fontWeight = 'bold';
+            titleDiv.style.color = '#2c3e50';
+            titleDiv.innerHTML = 'Resumen por Banco';
+
+            // Ajustar el tamaño del texto en las tarjetas
+            const allText = elementToConvert.querySelectorAll('.summary-card *');
+            allText.forEach(element => {
+                if (element.tagName === 'H4') {
+                    element.style.fontSize = '12px'; // Reducido a 12px
+                    element.style.marginBottom = '5px';
+                } else {
+                    element.style.fontSize = '11px'; // Reducido a 11px
+                }
+            });
+
+            // Crear el footer más compacto
+            const footer = document.createElement('div');
+            footer.style.position = 'absolute';
+            footer.style.bottom = '0';
+            footer.style.left = '0';
+            footer.style.width = '100%';
+            footer.style.borderTop = '1px solid #ddd';
+            footer.style.padding = '5px 0'; // Reducido a 5px
+            footer.style.textAlign = 'center';
+            footer.style.fontSize = '9px'; // Reducido a 9px
+            footer.style.color = '#666';
+            footer.style.backgroundColor = 'white';
+            footer.innerHTML = 'Desarrollado por GOES | Sistema de Gestión';
+
+            // Agregar todo al contenedor principal
+            mainContainer.appendChild(titleDiv);
+            mainContainer.appendChild(dateDiv);
+            mainContainer.appendChild(elementToConvert);
+            mainContainer.appendChild(footer);
+
+            // Generar el PDF
+            html2pdf()
+                .set(opt)
+                .from(mainContainer)
+                .save()
+                .catch(err => console.error('Error al generar PDF:', err));
+        }
+        // Agregar después de tus otras funciones
+        function reiniciarModal() {
+            // Limpiar el backdrop oscuro
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+            
+            // Remover la clase 'modal-open' del body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Ocultar el modal
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        // Agregar el event listener al botón
+        document.getElementById('exportBankSummaryPDF').addEventListener('click', exportBankSummaryPDF);
+
+        // Agregar esta función para calcular los totales
+        function actualizarTotalesFiltrados(data) {
+            let totalIngresos = 0;
+            let totalEgresos = 0;
+            const TASA_CAMBIO = 3.7;
+
+            data.forEach(registro => {
+                // Ignorar movimientos entre cuentas
+                if (registro.categoria && registro.categoria.toLowerCase() === 'movimiento entre cuentas') return;
+
+                let importe = parseFloat(registro.importe) || 0;
+                // Convertir a soles si es dólares
+                if (registro.moneda && (registro.moneda.toUpperCase() === 'USD' || 
+                    registro.moneda.toUpperCase() === 'DOLARES')) {
+                    importe *= TASA_CAMBIO;
+                }
+
+                if (registro.tipo.toLowerCase() === 'ingreso') {
+                    totalIngresos += importe;
+                } else if (registro.tipo.toLowerCase() === 'egreso') {
+                    totalEgresos += importe;
+                }
+            });
+
+            let resumenHtml = `
+                <div class="summary-totals-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <div class="total-box">
+                                <h5>Total Ingresos</h5>
+                                <span class="amount text-success">
+                                    ${formatearMonto(totalIngresos)} PEN
+                                </span>
+                                <div class="total-note">
+                                    <small>* Excluye movimientos entre cuentas</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="total-box">
+                                <h5>Total Egresos</h5>
+                                <span class="amount text-danger">
+                                    ${formatearMonto(totalEgresos)} PEN
+                                </span>
+                                <div class="total-note">
+                                    <small>* Excluye movimientos entre cuentas</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="total-box">
+                                <h5>Saldo</h5>
+                                <span class="amount ${totalIngresos - totalEgresos >= 0 ? 'text-success' : 'text-danger'}">
+                                    ${formatearMonto(totalIngresos - totalEgresos)} PEN
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insertar antes de la tabla
+            const tabla = document.getElementById('registrosTable');
+            const contenedorResumen = document.getElementById('resumenTotales') || document.createElement('div');
+            contenedorResumen.id = 'resumenTotales';
+            contenedorResumen.innerHTML = resumenHtml;
+            tabla.parentNode.insertBefore(contenedorResumen, tabla);
+        }
+    </script>
+
+    <!-- Modal de Edición -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editRowIndex">
+                        <div class="mb-3">
+                            <label for="editFecha" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="editFecha" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="editTipo" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Saldo Inicial">Saldo Inicial</option>
+                                <option value="Ingreso">Ingreso</option>
+                                <option value="Egreso">Egreso</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCentroCosto" class="form-label">Centro de Costo</label>
+                            <select class="form-select" id="editCentroCosto" required>
+                                <!-- Se llenará dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCategoria" class="form-label">Categoría</label>
+                            <select class="form-select" id="editCategoria" required>
+                                <!-- Se llenará dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSubtipo" class="form-label">Subtipo</label>
+                            <select class="form-select" id="editSubtipo" required>
+                                <!-- Se llenará dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editImporte" class="form-label">Importe</label>
+                            <input type="number" step="0.01" class="form-control" id="editImporte" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMoneda" class="form-label">Moneda</label>
+                            <select class="form-select" id="editMoneda" required>
+                                <option value="">Seleccione...</option>
+                                <option value="PEN">PEN</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBeneficiario" class="form-label">Beneficiario</label>
+                            <input type="text" class="form-control" id="editBeneficiario" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDetalle" class="form-label">Detalle</label>
+                            <textarea class="form-control" id="editDetalle" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveEdit">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Registro</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            max-width: 800px;
+        }
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .header h2 {
+            color: #FF6B35;
+        }
+        .btn-primary {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+        }
+        .btn-primary:hover {
+            background-color: #ff855b;
+            border-color: #ff855b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="text-center">Editar Registro</h2>
+        </div>
+
+        <form id="editForm">
+            <input type="hidden" id="rowIndex">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select class="form-select" id="tipo" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Saldo Inicial">Saldo Inicial</option>
+                        <option value="Ingreso">Ingreso</option>
+                        <option value="Egreso">Egreso</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="centroCosto" class="form-label">Centro de Costo</label>
+                    <select class="form-select" id="centroCosto" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="categoria" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="subtipo" class="form-label">Subtipo</label>
+                    <select class="form-select" id="subtipo" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="banco" class="form-label">Banco</label>
+                    <select class="form-select" id="banco" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="importe" class="form-label">Importe</label>
+                    <input type="number" step="0.01" class="form-control" id="importe" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="moneda" class="form-label">Moneda</label>
+                    <select class="form-select" id="moneda" required>
+                        <option value="">Seleccione...</option>
+                        <option value="SOLES">SOLES</option>
+                        <option value="DOLARES">DOLARES</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="beneficiario" class="form-label">Beneficiario</label>
+                <input type="text" class="form-control" id="beneficiario" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="detalle" class="form-label">Detalle</label>
+                <textarea class="form-control" id="detalle" rows="3" required></textarea>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='registros.html'">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5vofS0Q7mHtEyG0CAg1WUJtHi0Cow01cfoZWiufRn4s7t-NxUAc56FH8wr6Y1w4Vtg/exec';
+        
+        // Verificar rol de usuario
+        const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+        if (!userInfo || userInfo.rol.toLowerCase() !== 'administrador') {
+            alert('No tiene permisos para acceder a esta página');
+            window.close();
+        }
+
+        // Obtener el índice de la fila
+        const urlParams = new URLSearchParams(window.location.search);
+        const rowIndex = urlParams.get('row');
+
+        // Cargar datos iniciales (matrices)
+        async function cargarMatrices() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getData`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const data = result.data;
+                    
+                    // Llenar selectores
+                    llenarSelector('centroCosto', data.centrosCosto);
+                    llenarSelector('categoria', data.categorias);
+                    llenarSelector('banco', data.bancos);
+                    
+                    // Guardar mapeo de categorías y subtipos
+                    window.categoriaSubtipoMap = data.categoriaSubtipoMap;
+                    
+                    // Configurar evento change para categoría
+                    document.getElementById('categoria').addEventListener('change', actualizarSubtipos);
+                }
+            } catch (error) {
+                console.error('Error al cargar matrices:', error);
+                alert('Error al cargar datos iniciales');
+            }
+        }
+
+        // Cargar datos del registro
+        async function cargarRegistro() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getRegistro&row=${rowIndex}`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const registro = result.data;
+                    
+                    // Llenar el formulario
+                    document.getElementById('rowIndex').value = rowIndex;
+                    document.getElementById('fecha').value = registro.fecha;
+                    document.getElementById('tipo').value = registro.tipo;
+                    document.getElementById('centroCosto').value = registro.centroCosto;
+                    document.getElementById('categoria').value = registro.categoria;
+                    document.getElementById('importe').value = registro.importe;
+                    document.getElementById('moneda').value = registro.moneda;
+                    document.getElementById('beneficiario').value = registro.beneficiario;
+                    document.getElementById('detalle').value = registro.detalle;
+                    document.getElementById('banco').value = registro.banco;
+                    
+                    // Actualizar subtipos y seleccionar el valor actual
+                    await actualizarSubtipos();
+                    document.getElementById('subtipo').value = registro.subtipo;
+                }
+            } catch (error) {
+                console.error('Error al cargar registro:', error);
+                alert('Error al cargar el registro');
+            }
+        }
+
+        // Función auxiliar para llenar selectores
+        function llenarSelector(id, opciones) {
+            const selector = document.getElementById(id);
+            selector.innerHTML = '<option value="">Seleccione...</option>';
+            
+            opciones.forEach(opcion => {
+                if (opcion) {
+                    const option = document.createElement('option');
+                    option.value = opcion;
+                    option.textContent = opcion;
+                    selector.appendChild(option);
+                }
+            });
+        }
+
+        // Función para actualizar subtipos
+        function actualizarSubtipos() {
+            const categoriaSelect = document.getElementById('categoria');
+            const subtipoSelect = document.getElementById('subtipo');
+            const categoriaSeleccionada = categoriaSelect.value;
+            
+            subtipoSelect.innerHTML = '<option value="">Seleccione...</option>';
+            subtipoSelect.disabled = true;
+            
+            if (categoriaSeleccionada && window.categoriaSubtipoMap[categoriaSeleccionada]) {
+                window.categoriaSubtipoMap[categoriaSeleccionada].forEach(subtipo => {
+                    const option = document.createElement('option');
+                    option.value = subtipo;
+                    option.textContent = subtipo;
+                    subtipoSelect.appendChild(option);
+                });
+                subtipoSelect.disabled = false;
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarMatrices();
+            await cargarRegistro();
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const formData = {
+                    rowIndex: document.getElementById('rowIndex').value,
+                    fecha: document.getElementById('fecha').value,
+                    tipo: document.getElementById('tipo').value,
+                    centroCosto: document.getElementById('centroCosto').value,
+                    categoria: document.getElementById('categoria').value,
+                    subtipo: document.getElementById('subtipo').value,
+                    importe: document.getElementById('importe').value,
+                    detalle: document.getElementById('detalle').value,
+                    beneficiario: document.getElementById('beneficiario').value,
+                    banco: document.getElementById('banco').value,
+                    moneda: document.getElementById('moneda').value
+                };
+
+                // Convertir formData a parámetros de URL
+                const params = new URLSearchParams({
+                    action: 'updateRegistro',
+                    data: JSON.stringify(formData)
+                }).toString();
+
+                const response = await fetch(`${SCRIPT_URL}?${params}`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('Registro actualizado correctamente');
+                    window.location.href = 'registros.html'; // Redirigir solo en el iframe derecho
+                } else {
+                    throw new Error(result.message || 'Error al actualizar el registro');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar los cambios: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Gastos</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #FF6B35;
+            --primary-hover: #ff855b;
+            --text-color: #333;
+            --border-color: #E0E0E0;
+            --background-hover: #f8f8f8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: #666;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+
+        #status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        #status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+
+        .nav-buttons {
+            margin-bottom: 20px;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .nav-buttons a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-buttons a:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .nav-buttons a:last-child {
+            background-color: #dc3545;
+        }
+
+        .nav-buttons a:last-child:hover {
+            background-color: #bb2d3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Gastos</h1>
+        <form id="gastoForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="tipo">Tipo</label>
+                    <i class="fas fa-tag"></i>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="centroCosto">Centro de Costo</label>
+                    <i class="fas fa-building"></i>
+                    <select id="centroCosto" name="centroCosto" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría</label>
+                    <i class="fas fa-folder"></i>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subtipo">Subtipo</label>
+                    <i class="fas fa-tags"></i>
+                    <select id="subtipo" name="subtipo" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="importe">Importe</label>
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" id="importe" name="importe" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <i class="fas fa-calendar"></i>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="banco">Banco</label>
+                    <i class="fas fa-university"></i>
+                    <select id="banco" name="banco" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="moneda">Moneda</label>
+                    <i class="fas fa-coins"></i>
+                    <select id="moneda" name="moneda" required>
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="beneficiario">Beneficiario</label>
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="beneficiario" name="beneficiario" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="detalle">Detalle</label>
+                    <i class="fas fa-align-left"></i>
+                    <textarea id="detalle" name="detalle" required></textarea>
+                </div>
+            </div>
+
+            <button type="submit">
+                <i class="fas fa-save"></i>
+                Guardar Registro
+            </button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Verificar si hay una sesión activa
+        if (!sessionStorage.getItem('userInfo')) {
+            window.top.location.href = 'index.html';
+        }
+
+        // Variable global para el mapeo de categoría-subtipo
+        let categoriaSubtipoMap = {};
+        
+        // URL del script de Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5vofS0Q7mHtEyG0CAg1WUJtHi0Cow01cfoZWiufRn4s7t-NxUAc56FH8wr6Y1w4Vtg/exec';
+
+        // Función para llenar selectores
+        function llenarSelector(id, opciones) {
+            const selector = document.getElementById(id);
+            selector.innerHTML = `<option value="">Seleccione ${id}</option>`;
+            opciones.forEach(opcion => {
+                const option = document.createElement('option');
+                option.value = opcion;
+                option.textContent = opcion;
+                selector.appendChild(option);
+            });
+        }
+
+        // Función para mostrar mensajes de estado
+        function mostrarEstado(mensaje, esExito) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = mensaje;
+            statusDiv.className = esExito ? 'success' : 'error';
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Función para limpiar el formulario
+        function limpiarFormulario() {
+            document.getElementById('gastoForm').reset();
+            actualizarSubtipos();
+        }
+
+        // Función para cargar datos iniciales
+        window.cargarDatos = async function() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getData`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    console.log('Datos recibidos:', result.data);
+                    
+                    // Guardar el mapeo de categoría-subtipo
+                    categoriaSubtipoMap = result.data.categoriaSubtipoMap;
+                    
+                    // Llenar los selectores
+                    llenarSelector('tipo', result.data.tipos);
+                    llenarSelector('centroCosto', result.data.centrosCosto);
+                    llenarSelector('categoria', result.data.categorias);
+                    llenarSelector('banco', result.data.bancos);
+                    llenarSelector('moneda', result.data.monedas);
+                    
+                    // Agregar el evento change al selector de categoría
+                    document.getElementById('categoria').addEventListener('change', actualizarSubtipos);
+                    
+                    // Inicializar subtipos
+                    actualizarSubtipos();
+                } else {
+                    throw new Error(result.message || 'Error al cargar los datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarEstado('Error al cargar los datos: ' + error.message, false);
+            }
+        }
+
+        // Función para actualizar subtipos
+        window.actualizarSubtipos = function() {
+            const categoriaSeleccionada = document.getElementById('categoria').value;
+            const subtipoSelect = document.getElementById('subtipo');
+            
+            // Limpiar opciones actuales
+            subtipoSelect.innerHTML = '<option value="">Seleccione un subtipo</option>';
+            
+            if (categoriaSeleccionada && categoriaSubtipoMap[categoriaSeleccionada]) {
+                // Habilitar el select y agregar opciones
+                subtipoSelect.disabled = false;
+                categoriaSubtipoMap[categoriaSeleccionada].forEach(subtipo => {
+                    const option = document.createElement('option');
+                    option.value = subtipo;
+                    option.textContent = subtipo;
+                    subtipoSelect.appendChild(option);
+                });
+            } else {
+                // Deshabilitar el select si no hay categoría seleccionada
+                subtipoSelect.disabled = true;
+            }
+        }
+
+        // Manejar el envío del formulario
+        document.getElementById('gastoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    mostrarEstado(result.message, true);
+                    limpiarFormulario();
+                } else {
+                    throw new Error(result.message || 'Error al guardar el registro');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarEstado('Error al guardar el registro: ' + error.message, false);
+            }
+        });
+
+        // Cargar datos al iniciar la página
+        document.addEventListener('DOMContentLoaded', cargarDatos);
+    </script>
+</body>
+</html> 

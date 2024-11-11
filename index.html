@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Gestión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff6b35;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            width: 100%;
+            padding: 0.8rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #e85a2c;
+            border-color: #e85a2c;
+        }
+
+        .alert {
+            display: none;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fas fa-user-circle"></i>
+            <h2>Sistema de Gestión</h2>
+            <p class="text-muted">Ingrese sus credenciales</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" class="form-control" id="usuario" placeholder="Usuario" required>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" class="form-control" id="password" placeholder="Contraseña" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt me-2"></i>Ingresar
+            </button>
+        </form>
+        
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span id="errorMessage"></span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Constantes
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzG5vofS0Q7mHtEyG0CAg1WUJtHi0Cow01cfoZWiufRn4s7t-NxUAc56FH8wr6Y1w4Vtg/exec';
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            const alertElement = document.querySelector('.alert');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Validando...';
+            alertElement.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=login&usuario=${encodeURIComponent(document.getElementById('usuario').value)}&password=${encodeURIComponent(document.getElementById('password').value)}`);
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Guardar datos del usuario
+                    sessionStorage.setItem('userInfo', JSON.stringify({
+                        nombre: result.nombre,
+                        rol: result.rol,
+                        usuario: document.getElementById('usuario').value
+                    }));
+                    
+                    // Redirigir a main.html
+                    window.location.href = 'main.html';
+                } else {
+                    throw new Error(result.message || 'Usuario o contraseña incorrectos');
+                }
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                alertElement.style.display = 'block';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+            }
+        });
+
+        // Limpiar la sesión al cargar la página de login
+        window.addEventListener('load', function() {
+            sessionStorage.removeItem('userInfo');
+        });
+    </script>
+</body>
+</html>
