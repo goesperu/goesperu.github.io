@@ -1024,7 +1024,8 @@
             // Procesar cada registro
             data.forEach(registro => {
                 const banco = registro.banco;
-                const importe = parseFloat(registro.importe);
+                // Asegurarse de que el importe sea un número válido
+                const importe = parseFloat(registro.importe) || 0;
                 const tipo = registro.tipo.toLowerCase();
                 
                 // Inicializar el objeto del banco si no existe
@@ -1037,16 +1038,20 @@
                     };
                 }
 
-                // Sumar al total correspondiente
-                if (tipo === 'saldo inicial') {
-                    resumenBancos[banco].saldoInicial += importe;
-                    resumenBancos[banco].monedas.add(registro.moneda);
-                } else if (tipo.includes('ingreso')) {
-                    resumenBancos[banco].ingresos += importe;
-                    resumenBancos[banco].monedas.add(registro.moneda);
+                // Validar que el importe sea un número antes de sumarlo
+                if (!isNaN(importe)) {
+                    if (tipo === 'saldo inicial') {
+                        resumenBancos[banco].saldoInicial += importe;
+                        resumenBancos[banco].monedas.add(registro.moneda);
+                    } else if (tipo.includes('ingreso')) {
+                        resumenBancos[banco].ingresos += importe;
+                        resumenBancos[banco].monedas.add(registro.moneda);
+                    } else {
+                        resumenBancos[banco].egresos += importe;
+                        resumenBancos[banco].monedas.add(registro.moneda);
+                    }
                 } else {
-                    resumenBancos[banco].egresos += importe;
-                    resumenBancos[banco].monedas.add(registro.moneda);
+                    console.warn(`Valor no válido encontrado: ${registro.importe} para el banco ${banco}`);
                 }
             });
 
